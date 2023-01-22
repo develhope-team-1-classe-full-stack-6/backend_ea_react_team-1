@@ -1,0 +1,31 @@
+{
+  "name": "backend_ea_react_team-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/develhope-team-1-classe-full-stack-6/backend_ea_react_team-1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/develhope-team-1-classe-full-stack-6/backend_ea_react_team-1/issues"
+  },
+  "homepage": "https://github.com/develhope-team-1-classe-full-stack-6/backend_ea_react_team-1#readme",
+  "dependencies": {
+    "@prisma/client": "^4.8.1",
+    "express": "^4.18.2",
+    "express-validator": "^6.14.3",
+    "nodemon": "^2.0.20"
+  },
+  "devDependencies": {
+    "prisma": "^4.8.1"
+  }
+}
