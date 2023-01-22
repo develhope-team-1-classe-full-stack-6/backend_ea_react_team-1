@@ -2,7 +2,8 @@ import { Router } from "express";
 import { hashingPassword } from "../lib/middleware/cryptoPassword.js";
 import validatorResultMiddleware from "../lib/middleware/validator.js";
 import prisma from "../lib/prisma.js"
-import schema from "../lib/schema/schema.js";
+import { schemaSignin } from "../lib/schema/schema.js";
+import { checkAuthorization } from "../lib/session/passport.js";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get("/users", async (req, res) => {
 
 })
 
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", checkAuthorization, async (req, res) => {
     try {
         const usersId = Number(req.params.id)
         const user = await prisma.users.findUnique({
@@ -47,7 +48,7 @@ router.get("/users/:id", async (req, res) => {
 })
 
 router.post("/users",
-    schema,
+    schemaSignin,
     validatorResultMiddleware,
     hashingPassword,
     async (req, res) => {
@@ -72,10 +73,11 @@ router.post("/users",
     });
 
 
-router.delete("/users/:id", async (req, res) => {
+
+router.delete("/users/:id", checkAuthorization, async (req, res) => {
     try {
         const usersId = Number(req.params.id)
-        await prisma.users.delete({
+        const user = await prisma.users.findUnique({
             where: {
                 id: usersId
             }
@@ -85,6 +87,11 @@ router.delete("/users/:id", async (req, res) => {
             res.header("Content-Type", "application/json")
             return res.json({ status: "error 404", message: "utente non trovato" })
         }
+        await prisma.users.delete({
+            where: {
+                id: usersId
+            }
+        })
         res.status(200)
         res.header("Content-Type", "application/json")
         res.json({ status: "200 OK", message: "utente eliminato" })
@@ -94,7 +101,6 @@ router.delete("/users/:id", async (req, res) => {
         res.header("Content-Type", "application/json")
         return res.json({ status: "error 500", message: `${error.message}` })
     }
-
 })
 
 export default router;
