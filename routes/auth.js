@@ -3,15 +3,27 @@ import validatorResultMiddleware from "../lib/middleware/validator.js";
 import { schemaLogin, schemaSignin } from "../lib/schema/schema.js";
 import prisma from "../lib/prisma.js";
 import hashingPassword from "../lib/middleware/cryptoPassword.js"
-import { passport } from "../lib/middleware/session/passport.js";
+import { checkAuthorization, passport } from "../lib/middleware/session/passport.js";
 
 const router = Router()
 
-router.get("/users", async (req, res) => {
-    const users = await prisma.users.findMany();
-    res.json(users);
+router.get("/user", checkAuthorization, async (req, res) => {
+    try {
+        const idUser = req.session.passport.user;
+        const users = await prisma.users.findFirst({
+            where: { id: idUser }
+        });
+        res
+            .status(200)
+            .header("Content-Type", "application/json")
+            .json({ email: users.email, idEA: users.idEA })
+    } catch (error) {
+        return res
+            .status(500)
+            .header("Content-Type", "application/json")
+            .json({ status: "error 500", message: `${error.message}` })
+    }
 })
-
 
 router.post("/login", schemaLogin, validatorResultMiddleware, passport.authenticate('local', {
     successRedirect: "/auth/success",
@@ -19,17 +31,17 @@ router.post("/login", schemaLogin, validatorResultMiddleware, passport.authentic
     failureFlash: true
 }))
 
-router.get("/success", (req, res) => {
+router.get("/success", checkAuthorization, (req, res) => {
     res.status(200)
         .header("Content-Type", "application/json")
-        .json({ status: "stato 200", messaggio: "login eseguito" })
+        .json({ status: "stato 200", message: "login eseguito" })
 });
 
 router.get("/failure", (req, res) => {
     res
         .status(404)
         .header("Content-Type", "application/json")
-        .json({ status: "stato 404", messaggio: "utente non trovato" });
+        .json({ status: "stato 404", message: "utente non trovato" });
 
 });
 
@@ -63,12 +75,12 @@ router.post("/signin", schemaSignin,
                 return res
                     .status(201)
                     .header("Content-Type", "application/json")
-                    .json({ status: "stato 201", messaggio: "utente registrato" })
+                    .json({ status: "stato 201", message: "utente registrato" })
             } else {
                 return res
                     .status(405)
                     .header("Content-Type", "application/json")
-                    .json({ status: "stato 405", messaggio: "utente già registrato" })
+                    .json({ status: "stato 405", message: "utente già registrato" })
             }
         } catch (error) {
             return res
