@@ -45,43 +45,25 @@ router.get("/failure", (req, res) => {
 
 });
 
-router.post("/signin", schemaSignin,
+router.post("/signup", schemaSignin,
     validatorResultMiddleware,
     hashingPassword,
     async (req, res) => {
         const { email, idEA, password } = req.body;
 
         try {
-            const user = await prisma.users.findFirst({
-                where: {
-                    OR: [
-                        {
-                            email: email
-                        }, {
-                            idEA: idEA
-                        }]
+            await prisma.users.create({
+                data: {
+                    email: email,
+                    idEA: idEA,
+                    password: password
                 }
             });
 
-            if (!user) {
-                await prisma.users.create({
-                    data: {
-                        email: email,
-                        idEA: idEA,
-                        password: password
-                    }
-                });
-
-                return res
-                    .status(201)
-                    .header("Content-Type", "application/json")
-                    .json({ status: "stato 201", message: "utente registrato" })
-            } else {
-                return res
-                    .status(405)
-                    .header("Content-Type", "application/json")
-                    .json({ status: "stato 405", message: "utente già registrato" })
-            }
+            return res
+                .status(201)
+                .header("Content-Type", "application/json")
+                .json({ status: "stato 201", message: "utente registrato" })
         } catch (error) {
             return res
                 .status(500)
@@ -97,7 +79,7 @@ router.get("/logout", (req, res, next) => {
             return next(error);
         }
 
-        res.redirect("http://localhost:3000/");
+        res.json({ status: "status 200", message: `utente non loggato` })
     });
 });
 
