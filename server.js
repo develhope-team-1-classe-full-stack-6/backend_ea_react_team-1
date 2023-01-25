@@ -1,10 +1,10 @@
 import "dotenv/config"
 import express from "express";
-import passport from "passport";
 import config from "./config.js";
-import initSessionMiddleware from "./lib/session/session.js";
-import usersRoute from "./routes/users.js"
-import authRoute from "./routes/auth.js"
+import authRoute from "./routes/auth.js";
+import cors from "cors";
+import initSessionMiddleware from "./lib/middleware/session/session.js";
+import passport from "passport";
 
 const app = express();
 
@@ -14,9 +14,12 @@ app.use(passport.session());
 
 
 app.use(express.json());
+app.use(cors({
+    origin: "http://localhost:3000"
+}))
 
-app.use("/", usersRoute)
 app.use("/auth", authRoute)
+
 
 const port = config.PORT
 
